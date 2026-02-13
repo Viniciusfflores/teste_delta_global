@@ -36,6 +36,8 @@ services:
     working_dir: /var/www/api
     volumes:
       - ./apps/api:/var/www/api
+      - ./docker/php/docker-entrypoint.sh:/docker-entrypoint.sh
+      - ./public/uploads:/var/www/api/public/uploads
     environment:
       - DB_HOST=${DB_HOST}
       - DB_DATABASE=${DB_DATABASE}
@@ -48,6 +50,7 @@ services:
         condition: service_healthy
     networks:
       - app-network
+    command: bash /docker-entrypoint.sh
 
   # React Frontend
   web:
