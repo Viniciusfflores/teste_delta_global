@@ -1,28 +1,42 @@
 #!/bin/bash
 set -e
+echo "Iniciando Configuração da API..."
 
-echo "🚀 Iniciando API CodeIgniter..."
-
-# Instalar dependências se necessário
-if [ ! -d "vendor" ]; then
-    echo "📦 Instalando dependências..."
-    composer install --no-interaction --optimize-autoloader
-    composer require firebase/php-jwt --no-interaction
-else
-    echo "✅ Dependências já instaladas"
-fi
-
-# Ajustar permissões
-echo "🔧 Ajustando permissões..."
+echo "Ajustando permissões de pastas..."
 chmod -R 777 writable/ 2>/dev/null || true
 mkdir -p public/uploads/students
 chmod -R 777 public/uploads/ 2>/dev/null || true
 
-# Garantir que estamos usando porta 8000
-export CI_SERVER_PORT=8000
+if [ ! -d "vendor" ]; then
+    echo "Vendor não encontrado. Instalando dependências..."
+    composer install --no-interaction --optimize-autoloader
+else
+    echo "Dependências já instaladas."
+fi
 
-echo "✨ Iniciando servidor na porta 8000..."
+echo "Aguardando conexão com o Banco de Dados..."
+
+until php -r "
+    try {
+        \$pdo = new PDO('mysql:host=${DB_HOST};dbname=${DB_DATABASE}', '${DB_USERNAME}', '${DB_PASSWORD}');
+        echo 'Conexão bem sucedida!';
+        exit(0);
+    } catch (PDOException \$e) {
+        exit(1);
+    }
+" > /dev/null 2>&1; do
+    echo " ...MySQL indisponível, aguardando 3 segundos..."
+    sleep 3
+done
+echo "MySQL conectado!"
+
+echo "Executando Migrations..."
+php spark migrate
+
+echo "Executando Seeders..."
+php spark db:seed UserSeeder
+
+echo "Iniciando servidor CodeIgniter na porta 8000..."
 echo ""
 
-# Iniciar servidor EXPLICITAMENTE na porta 8000
-exec php -S 0.0.0.0:8000 -t public public/index.php
+exec "$@"

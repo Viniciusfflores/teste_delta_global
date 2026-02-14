@@ -8,6 +8,12 @@ class UserSeeder extends Seeder
 {
     public function run()
     {
+        $model = new \App\Models\UserModel();
+
+        if ($model->where('email', 'admin@admin.com')->first()) {
+            return;
+        }
+
         $data = [
             'name'       => 'Administrador',
             'email'      => 'admin@test.com',
