@@ -51,7 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     navigate('/dashboard');
   };
-
+  
   return (
     <AuthContext.Provider value={{ user, loading, signIn, signOut }}>
       {children}

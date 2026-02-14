@@ -128,10 +128,14 @@ class Students extends ResourceController
 
         $data = [
             'name' => $input['name'] ?? null,
-            'email' => $input['email'] ?? null,
             'phone' => $input['phone'] ?? null,
             'address' => $input['address'] ?? null,
+            'email' => $input['email'] ?? null,
         ];
+
+        if ($data['email'] === $student['email']) {
+            unset($data['email']);
+        }
 
         $data = array_filter($data, fn($value) => !is_null($value));
 
@@ -170,6 +174,28 @@ class Students extends ResourceController
         ]);
     }
 
+    public function delete($id = null){
+        if (empty($id)) {
+            return $this->fail('ID do aluno não fornecido', 404);
+        }
+
+        $studentModel = new StudentModel();
+        $student = $studentModel->find($id);
+
+        if (!$student) {
+            return $this->failNotFound('Aluno não encontrado');
+        }
+
+        if (!$studentModel->delete($id)) {
+            return $this->fail('Erro ao deletar aluno', 500);
+        }
+
+        return $this->respond([
+            'success' => true,
+            'message' => 'Aluno deletado com sucesso'
+        ]);
+    }
+
 
     private function uploadPhoto($file): array
     {
@@ -182,17 +208,17 @@ class Students extends ResourceController
             ];
         }
 
-        $maxSize = 5 * 1024 * 1024;
+        $maxSize = 10 * 1024 * 1024;
         if ($file->getSize() > $maxSize) {
             return [
                 'success' => false,
-                'message' => 'Arquivo muito grande. Tamanho máximo: 5MB'
+                'message' => 'Arquivo muito grande. Tamanho máximo: 10MB'
             ];
         }
 
         $newName = $file->getRandomName();
 
-        $uploadPath = WRITEPATH . '../public/uploads/students/';
+        $uploadPath = FCPATH . 'uploads/students/';
 
         if (!is_dir($uploadPath)) {
             mkdir($uploadPath, 0777, true);
