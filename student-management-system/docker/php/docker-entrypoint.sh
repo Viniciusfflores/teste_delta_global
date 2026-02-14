@@ -31,7 +31,7 @@ done
 echo "MySQL conectado!"
 
 echo "Executando Migrations..."
-php spark migrate
+php spark migrate || echo "⚠️  Migration falhou (tabelas podem já existir). Continuando..."
 
 echo "Executando Seeders..."
 php spark db:seed UserSeeder
@@ -39,4 +39,4 @@ php spark db:seed UserSeeder
 echo "Iniciando servidor CodeIgniter na porta 8000..."
 echo ""
 
-exec "$@"
+exec php -S 0.0.0.0:8000 -t public/

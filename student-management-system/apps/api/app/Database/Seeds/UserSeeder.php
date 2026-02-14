@@ -3,34 +3,35 @@
 namespace App\Database\Seeds;
 
 use CodeIgniter\Database\Seeder;
+use App\Models\UserModel;
 
 class UserSeeder extends Seeder
 {
     public function run()
     {
-        $model = new \App\Models\UserModel();
+        $model = new UserModel();
 
-        if ($model->where('email', 'admin@admin.com')->first()) {
+        $email = 'admin@admin.com';
+        $password = 'admin123';
+
+        if ($model->where('email', $email)->first()) {
+            echo "Usuário admin já existe ({$email}).\n";
             return;
         }
 
         $data = [
-            'name'       => 'Administrador',
-            'email'      => 'admin@test.com',
-            'password'   => password_hash('admin123', PASSWORD_DEFAULT),
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s'),
+            'name'     => 'Administrador',
+            'email'    => $email,
+            'password' => $password,
         ];
 
-        $builder = $this->db->table('users');
-        
-        if (!$builder->where('email', $data['email'])->get()->getRow()) {
-            $builder->insert($data);
-            echo "✅ Usuário admin criado com sucesso!\n";
-            echo "   Email: admin@test.com\n";
-            echo "   Senha: admin123\n";
+        if ($model->insert($data)) {
+            echo "Usuário admin criado com sucesso!\n";
+            echo "   Email: {$email}\n";
+            echo "   Senha: {$password}\n";
         } else {
-            echo "⚠️  Usuário admin já existe.\n";
+            echo "Erro ao criar usuário:\n";
+            print_r($model->errors());
         }
     }
 }
